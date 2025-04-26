@@ -2,7 +2,6 @@ package com.ProductOrderApp.ProductOrderApp.controller;
 
 import com.ProductOrderApp.ProductOrderApp.model.Product;
 import com.ProductOrderApp.ProductOrderApp.service.ProductService;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
