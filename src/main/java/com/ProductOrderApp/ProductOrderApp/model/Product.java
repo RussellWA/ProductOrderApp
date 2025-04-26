@@ -19,6 +19,4 @@ public class Product {
     private String name;
     private String type;
     private Long price;
-    private int quantity;
-    private Long totalPrice;
 }
