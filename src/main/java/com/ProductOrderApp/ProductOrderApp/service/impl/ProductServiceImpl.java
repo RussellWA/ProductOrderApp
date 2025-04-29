@@ -1,6 +1,10 @@
 package com.ProductOrderApp.ProductOrderApp.service.impl;
 
+import com.ProductOrderApp.ProductOrderApp.exceptions.BadRequestException;
+import com.ProductOrderApp.ProductOrderApp.exceptions.ResourceNotFoundException;
 import com.ProductOrderApp.ProductOrderApp.model.Product;
+import com.ProductOrderApp.ProductOrderApp.repository.CartItemRepository;
+import com.ProductOrderApp.ProductOrderApp.repository.OrderItemRepository;
 import com.ProductOrderApp.ProductOrderApp.repository.ProductRepository;
 import com.ProductOrderApp.ProductOrderApp.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +17,10 @@ import org.springframework.stereotype.Service;
 public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+    @Autowired
+    private CartItemRepository cartItemRepository;
 
     @Override
     public Product createProduct(Product product) {
@@ -27,20 +35,27 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getProductById(Long id) {
-        return productRepository.findById(id).orElse(null);
+        return productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found"));
     }
 
     @Override
     public Product updateProduct(Long id, Product product) {
-        if (!productRepository.existsById(id)) {
-            return null;
-        }
-        product.setId(id);
-        return productRepository.save(product);
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product with ID " + id + " not found"));
+        existingProduct.setName(product.getName());
+        existingProduct.setType(product.getType());
+        existingProduct.setPrice(product.getPrice());
+        return productRepository.save(existingProduct);
     }
 
     @Override
     public boolean deleteProduct(Long id) {
+        if (orderItemRepository.existsByProductId(id)) {
+            throw new BadRequestException("Cannot delete product — it is used in an order.");
+        }
+        else if (cartItemRepository.existsByProductId(id)) {
+            throw new BadRequestException("Cannot delete product — it is used in a cart.");
+        }
         if (productRepository.existsById(id)) {
             productRepository.deleteById(id);
             return true;

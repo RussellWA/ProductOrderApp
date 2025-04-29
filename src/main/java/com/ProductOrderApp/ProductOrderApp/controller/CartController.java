@@ -26,8 +26,9 @@ public class CartController {
     }
 
     @GetMapping("/{cartId}")
-    public Cart viewCart(@PathVariable Long cartId) {
-        return cartService.viewCart(cartId);
+    public ResponseEntity<Cart> viewCart(@PathVariable Long cartId) {
+        Cart cart = cartService.viewCart(cartId);
+        return cart != null ? new ResponseEntity<>(cart, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping("/{cartId}/place-order")
@@ -37,8 +38,8 @@ public class CartController {
     }
 
     @PostMapping("/create")
-    public Cart createCart() {
-        Cart cart = new Cart();
-        return cartRepository.save(cart);
+    public ResponseEntity<Cart> createCart() {
+        Cart cart = cartRepository.save(new Cart());
+        return new ResponseEntity<>(cart, HttpStatus.CREATED);
     }
 }

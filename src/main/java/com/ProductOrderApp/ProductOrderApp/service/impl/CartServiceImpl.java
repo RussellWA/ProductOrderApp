@@ -1,6 +1,8 @@
 package com.ProductOrderApp.ProductOrderApp.service.impl;
 
 import com.ProductOrderApp.ProductOrderApp.DTO.ProductToCartRequest;
+import com.ProductOrderApp.ProductOrderApp.exceptions.BadRequestException;
+import com.ProductOrderApp.ProductOrderApp.exceptions.ResourceNotFoundException;
 import com.ProductOrderApp.ProductOrderApp.model.*;
 import com.ProductOrderApp.ProductOrderApp.repository.CartRepository;
 import com.ProductOrderApp.ProductOrderApp.repository.OrderRepository;
@@ -25,8 +27,8 @@ public class CartServiceImpl implements CartService {
     @Transactional
     @Override
     public Cart addProductToCart(Long cartId, ProductToCartRequest request) {
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
-        Product product = productRepository.findById(request.getProductId()).orElseThrow(() -> new RuntimeException("Product not found"));
+        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new ResourceNotFoundException("Cart with ID " + cartId + " not found"));
+        Product product = productRepository.findById(request.getProductId()).orElseThrow(() -> new ResourceNotFoundException("Product with ID " + request.getProductId() + " not found"));
 
         Optional<CartItem> previousCartItem = cart.getItems().stream().filter(cartItem -> cartItem.getProduct().equals(product)).findFirst();
 
@@ -52,16 +54,16 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public Cart viewCart(Long cartId) {
-        return cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
+        return cartRepository.findById(cartId).orElseThrow(() -> new ResourceNotFoundException("Cart with ID " + cartId + " not found"));
     }
 
     @Transactional
     @Override
     public Order placeOrder(Long cartId, String customerName) {
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
+        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new ResourceNotFoundException("Cart with ID " + cartId + " not found"));
         Long totalPrice = 0L;
 
-        if (cart.getItems().isEmpty()) throw new RuntimeException("Cart is Empty");
+        if (cart.getItems().isEmpty()) throw new BadRequestException("Cart is empty");
 
         Order order = new Order();
         order.setCustomerName(customerName);
